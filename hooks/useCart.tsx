@@ -9,6 +9,8 @@ interface CartContextProps {
     productCartQty: number
     cartPrdcts: CardProductProps[] | null
     addToBasket: (product: CardProductProps) => void
+    addToBasketIncrease: (product: CardProductProps) => void
+    addToBasketDecrease: (product: CardProductProps) => void
     removeFromCart: (product: CardProductProps) => void
     removeCart: () => void
 
@@ -31,6 +33,40 @@ export const CartContextProvider = (props: Props) => {
         let getItemParse: CardProductProps[] | null = JSON.parse(getItem)
         setCartPrdcts(getItemParse)
     }, [])
+
+    const addToBasketIncrease = useCallback((product: CardProductProps) => {
+        let updatedCart;
+        if (product.quantity == 10) {
+            return toast.error('Maximum limit reached')
+        }
+        if (cartPrdcts) {
+            updatedCart = [...cartPrdcts];
+            const existingItem = cartPrdcts.findIndex(item => item.id === product.id)
+
+            if (existingItem > -1) {
+                updatedCart[existingItem].quantity = ++updatedCart[existingItem].quantity
+            }
+            setCartPrdcts(updatedCart)
+            localStorage.setItem('cart', JSON.stringify(null))
+        }
+    }, [cartPrdcts])
+
+    const addToBasketDecrease = useCallback((product: CardProductProps) => {
+        let updatedCart;
+        if (product.quantity == 1) {
+            return toast.error('Minimum limit reached')
+        }
+        if (cartPrdcts) {
+            updatedCart = [...cartPrdcts];
+            const existingItem = cartPrdcts.findIndex(item => item.id === product.id)
+
+            if (existingItem > -1) {
+                updatedCart[existingItem].quantity = --updatedCart[existingItem].quantity
+            }
+            setCartPrdcts(updatedCart)
+            localStorage.setItem('cart', JSON.stringify(null))
+        }
+    }, [cartPrdcts])
 
 
     const removeCart = useCallback(() => {
@@ -59,7 +95,7 @@ export const CartContextProvider = (props: Props) => {
 
             setCartPrdcts(filteredProducts)
 
-            toast.error('Product Removed from Cart!')
+            toast.success('Product Removed from Cart!')
             localStorage.setItem('cart', JSON.stringify(filteredProducts))
         }
     }, [cartPrdcts])
@@ -69,7 +105,9 @@ export const CartContextProvider = (props: Props) => {
         addToBasket,
         cartPrdcts,
         removeFromCart,
-        removeCart
+        removeCart,
+        addToBasketIncrease,
+        addToBasketDecrease,
     }
 
     return (
