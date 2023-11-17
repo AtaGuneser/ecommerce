@@ -1,9 +1,62 @@
-import React from 'react'
+'use client'
 
-const User = () => {
+import { User } from "@prisma/client";
+import { useState } from "react";
+import { AiOutlineUser } from "react-icons/ai";
+import { signOut } from "next-auth/react"
+import { useRouter } from "next/navigation";
+
+
+interface UserProps {
+  currentUser: User | null | undefined
+}
+
+const Users: React.FC<UserProps> = ({ currentUser }) => {
+  const router = useRouter();
+  const [openMenu, setOpenMenu] = useState(false)
+
+  console.log(currentUser, 'current user');
+
+  const menuFunc = (type: any) => {
+    if (type == "logout") {
+      setOpenMenu(false)
+      signOut();
+      router.push("/login")
+    } else if (type == "register") {
+      router.push("/register")
+    } else {
+      router.push("/login")
+    }
+  }
   return (
-    <div className='hidden md:flex'>User</div>
+    <div className='hidden md:flex relative '>
+      <div onClick={() => setOpenMenu(!openMenu)} className="flex items-center gap-1 cursor-pointer">
+        <AiOutlineUser size="25" />
+        <div>{currentUser ? currentUser.name : "User"}</div>
+      </div>
+      <div>
+        {
+          openMenu && (
+            <div className="absolute w-[200px] top-10 bg-white shadow-lg rounded-md right-0 p-2 cursor-pointer">
+              {
+                currentUser ? (
+                  <div className="space-y-1">
+                    <div className="text-slate-600">Admin</div>
+                    <div onClick={() => menuFunc("logout")} className="text-slate-600">Logout</div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div onClick={() => menuFunc("register")} className="text-slate-600">Register</div>
+                    <div onClick={() => menuFunc("login")} className="text-slate-600">Login</div>
+                  </div>
+                )
+              }
+            </div>
+          )
+        }
+      </div>
+    </div>
   )
 }
 
-export default User
+export default Users
